@@ -1,0 +1,67 @@
+# Import necessary libraries
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Set random seed for reproducibility
+np.random.seed(42)
+
+# Simulate spread shifts for normal and stress periods
+spread_shifts_normal = np.linspace(-50, 50, 11)  # Normal spread shifts (-50 to +50 bps)
+spread_shifts_stress = np.linspace(-200, 200, 11)  # Stress spread shifts (-200 to +200 bps)
+
+# Initial bond price
+initial_price = 100  # Assume a par bond
+
+# Base duration and gamma for Delta-Gamma model
+duration = 3  # Normal duration of 3 years
+gamma = -0.02  # Negative convexity impact
+
+# Dynamic Gamma Scaling Factor for Stress Events
+gamma_scaling_factor = 1.5  # Increase Gamma impact in stress events
+
+# Maximum duration cap to prevent excessive extension in stress scenarios
+max_duration_factor = 2  # Maximum allowed duration extension (e.g., 6 years max if normal is 3)
+
+# Jump-Diffusion Factor (Liquidity Shock Impact)
+jump_magnitude = 0.5  # Simulated jump risk in stress scenarios
+
+# Compute PnL for Normal VaR (Delta-Gamma Model)
+price_change_dg_normal = -duration * (spread_shifts_normal / 100) + 0.5 * gamma * (spread_shifts_normal / 100) ** 2
+
+# Compute PnL for Stress VaR (Old Model - Delta-Gamma without fixes)
+price_change_dg_stress_old = -duration * (spread_shifts_stress / 100) + 0.5 * gamma * (spread_shifts_stress / 100) ** 2
+
+# Compute PnL for Stress VaR (New Model with Fixes)
+adjusted_gamma = gamma * gamma_scaling_factor  # Adjust Gamma dynamically
+capped_duration = min(duration * max_duration_factor, 6)  # Cap duration at a max value
+jump_effect = jump_magnitude * np.sign(spread_shifts_stress)  # Introduce jump shocks
+
+# New Model: Delta-Gamma + Dynamic Convexity + Capped Duration + Jump-Diffusion
+price_change_dg_stress_new = -capped_duration * (spread_shifts_stress / 100) + 0.5 * adjusted_gamma * (spread_shifts_stress / 100) ** 2 + jump_effect
+
+# Create DataFrame for visualization
+df_stress_var = pd.DataFrame({
+    "Spread Shift (bps)": spread_shifts_stress,
+    "Old Stress VaR Model": price_change_dg_stress_old,
+    "New Stress VaR Model": price_change_dg_stress_new
+})
+
+# Plot the results
+plt.figure(figsize=(10, 6))
+plt.plot(spread_shifts_stress, price_change_dg_stress_old, label="Old Stress VaR Model (Delta-Gamma)", linestyle="--", color="red")
+plt.plot(spread_shifts_stress, price_change_dg_stress_new, label="New Stress VaR Model (Dynamic Adjustments)", linewidth=2, color="blue")
+
+plt.axhline(0, color='black', linewidth=0.8)
+plt.xlabel("Spread Shift (bps)")
+plt.ylabel("Price Change ($)")
+plt.title("Stress VaR Model Comparison: Old vs. New Approach")
+plt.legend()
+plt.grid(True)
+
+# Display the chart
+plt.show()
+
+# Display DataFrame for reference
+import ace_tools as tools
+tools.display_dataframe_to_user(name="Stress VaR Model Comparison", dataframe=df_stress_var)
