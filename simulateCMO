@@ -1,0 +1,52 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Simulate price movements for an RMBS security with different models
+np.random.seed(42)
+
+# Simulated 10-day spread shifts (in basis points)
+spread_shifts = np.linspace(-100, 100, 21)  # Spread changes from -100 to +100 bps
+
+# Initial bond price
+initial_price = 100  # Assume a par bond
+
+# Duration-based price impact (Linear Delta Model)
+duration = 3  # 3-year duration
+price_change_duration = -duration * (spread_shifts / 100)
+
+# Delta-Gamma Approximation (Quadratic Model)
+gamma = -0.02  # Assume negative convexity for RMBS
+price_change_dg = price_change_duration + 0.5 * gamma * (spread_shifts / 100) ** 2
+
+# Full Revaluation Model (Simulated using a convex price function)
+full_revaluation_price = initial_price * np.exp(-0.03 * spread_shifts / 100)  # More realistic impact
+price_change_full = full_revaluation_price - initial_price
+
+# Create DataFrame for visualization
+df = pd.DataFrame({
+    "Spread Shift (bps)": spread_shifts,
+    "Delta Model PnL": price_change_duration,
+    "Delta-Gamma Model PnL": price_change_dg,
+    "Full Revaluation Model PnL": price_change_full
+})
+
+# Plot the results
+plt.figure(figsize=(10, 6))
+plt.plot(df["Spread Shift (bps)"], df["Delta Model PnL"], label="Delta Model (Linear)", linestyle="--")
+plt.plot(df["Spread Shift (bps)"], df["Delta-Gamma Model PnL"], label="Delta-Gamma Approximation", linestyle="-.")
+plt.plot(df["Spread Shift (bps)"], df["Full Revaluation Model PnL"], label="Full Revaluation (Realistic)", linewidth=2)
+
+plt.axhline(0, color='black', linewidth=0.8)
+plt.xlabel("Spread Shift (bps)")
+plt.ylabel("Price Change ($)")
+plt.title("RMBS Price Sensitivity: Delta vs. Delta-Gamma vs. Full Revaluation")
+plt.legend()
+plt.grid(True)
+
+# Display the chart
+plt.show()
+
+# Display DataFrame for reference
+import ace_tools as tools
+tools.display_dataframe_to_user(name="RMBS Delta-Gamma Model Comparison", dataframe=df)
