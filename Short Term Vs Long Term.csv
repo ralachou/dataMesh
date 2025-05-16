@@ -1,0 +1,18 @@
+﻿,tactical Solution,Strategic Solution
+Where to Implement,Mars + RFDM,Vasara + Credit EMR + MDSOR
+"is this effort reusable, future compatible",No,Yes
+ROA,Low,High
+Efforts  difficulty ,doable ,High
+Impact on Capital and SVAR Reduciton,Low,Expected to be Medium  (Full Reval VAR) 
+,,
+FO Pricer in scope,Legacy RVF+ (No  optionality and Risky ),Full Config
+Can we fit  Callabe Bonds ,No,Yes
+Compatible with FRTB,No,Yes
+Cost,Data cost + potential Tech implementation,
+,,
+Level Of Granularity,Sector + Region,"Sector , Region, IG Issuer, FallBack Methodology"
+Inputs used,Bloomberg Par Curves,TBD
+Curve Building Methodology,No needed. Vendor-based,TBD
+Credit Curve Outputs,All-In-Forward Rate,Implied Bond Spread Curve
+Does it Trigger Regulatory Exam,Potentially No,Yes
+,,
